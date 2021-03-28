@@ -1,6 +1,6 @@
 # signal-connector
 
-A lightweight "signals and slots" like in Qt.
+A lightweight "signals and slots".
 One header only.
 
 ## Example of use
