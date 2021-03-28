@@ -59,6 +59,13 @@ int main(int argc, char* argv[])
     
   conr.emitSignal(1, a, b, c);
 
+
+  conr.connectSlot(2, std::function<void(int&, int)>([](int& a, int b) {
+    a = b;
+  }));
+
+  conr.emitSignal<int&, int>(2, a, b);
+
   return 0;
 }
 
