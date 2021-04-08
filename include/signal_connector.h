@@ -1,5 +1,5 @@
 //
-// Interpreter Project
+// Signal-connector Project
 // Copyright (C) 2020 by Contributors <https://github.com/Tyill/signal-connector>
 //
 // This code is licensed under the MIT License.
@@ -29,6 +29,7 @@
 #include <map>
 #include <functional>
 #include <mutex>
+#include <memory>
 
 class SignalConnector {
 

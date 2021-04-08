@@ -1,5 +1,5 @@
 //
-// Interpreter Project
+// Signal-connector Project
 // Copyright (C) 2020 by Contributors <https://github.com/Tyill/signal_connector>
 //
 // This code is licensed under the MIT License.
