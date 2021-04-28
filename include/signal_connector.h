@@ -38,19 +38,28 @@ public:
   ~SignalConnector() = default;
 
   typedef int SignalType;
+  typedef void* SlotHandler;
 
   template<typename... Args>
-  void connectSlot(SignalType stype, std::function<void(Args...)> func)
+  SlotHandler connectSlot(SignalType stype, std::function<void(Args...)> func)
   {
     std::lock_guard<std::mutex> lck(m_mtx);
     m_slots[stype].push_back(std::make_unique<SlotFunctor<Args...>>(func));
+
+    return m_slots[stype].back().get();
   }
 
-  void disconnectSlot(SignalType stype)
+  void disconnectSlot(SignalType stype, SlotHandler slot)
   {
     std::lock_guard<std::mutex> lck(m_mtx);
-    if (m_slots.find(stype) != m_slots.end()) 
-      m_slots[stype].clear();
+    if (m_slots.find(stype) != m_slots.end()){
+      for (auto it = m_slots[stype].begin(); it != m_slots[stype].end(); ++it){
+        if (it->get() == slot){
+          m_slots[stype].erase(it);
+          break;
+        }
+      }
+    }
   }
 
   template<typename... Args>
@@ -62,9 +71,8 @@ public:
       ok = true;
       for (auto& af : m_slots[stype]) {
         auto f = dynamic_cast<SlotFunctor<Args...>*>(af.get());
-        if (f) {
+        if (f)
           f->m_func(args...);
-        }
         else
           ok = false;
       }
