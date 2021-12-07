@@ -1,6 +1,6 @@
 //
-// Signal-connector Project
-// Copyright (C) 2020 by Contributors <https://github.com/Tyill/signal-connector>
+// Connector Project
+// Copyright (C) 2020 by Contributors <https://github.com/Tyill/connector>
 //
 // This code is licensed under the MIT License.
 //
@@ -31,25 +31,25 @@
 #include <mutex>
 #include <memory>
 
-class SignalConnector {
+class Connector {
 
 public: 
-  SignalConnector() = default;
-  ~SignalConnector() = default;
+  Connector() = default;
+  ~Connector() = default;
 
-  typedef int SignalType;
-  typedef void* SlotHandler;
+  typedef int Signal;
+  typedef void* Handler;
 
   template<typename... Args>
-  SlotHandler connectSlot(SignalType stype, std::function<void(Args...)> func)
+  Handler connect(Signal stype, std::function<void(Args...)> func)
   {
     std::lock_guard<std::mutex> lck(m_mtx);
-    m_slots[stype].push_back(std::make_unique<SlotFunctor<Args...>>(func));
+    m_slots[stype].push_back(std::make_unique<Slot<Args...>>(func));
 
     return m_slots[stype].back().get();
   }
 
-  void disconnectSlot(SignalType stype, SlotHandler slot)
+  void disconnect(Signal stype, Handler slot)
   {
     std::lock_guard<std::mutex> lck(m_mtx);
     if (m_slots.find(stype) != m_slots.end()){
@@ -63,14 +63,14 @@ public:
   }
 
   template<typename... Args>
-  bool emitSignal(SignalType stype, Args... args)
+  bool emit(Signal stype, Args... args)
   {
     std::lock_guard<std::mutex> lck(m_mtx);
     bool ok = false;
     if (m_slots.find(stype) != m_slots.end()) {
       ok = true;
       for (auto& af : m_slots[stype]) {
-        auto f = dynamic_cast<SlotFunctor<Args...>*>(af.get());
+        auto f = dynamic_cast<Slot<Args...>*>(af.get());
         if (f)
           f->m_func(args...);
         else
@@ -81,19 +81,19 @@ public:
   }
 
 private:
-  class AbstractFunctor {
-  public: virtual ~AbstractFunctor() {}
+  class ISlot {
+  public: virtual ~ISlot() {}
   };
   template<typename ...Args>
-  class SlotFunctor : public AbstractFunctor {
+  class Slot : public ISlot {
   public:
-    SlotFunctor(std::function<void(Args...)> func) :
-      AbstractFunctor(), m_func(func){}
+    Slot(std::function<void(Args...)> func) :
+      ISlot(), m_func(func){}
        
     std::function<void(Args...)> m_func;
   };
 
 private:
-  std::map<SignalType, std::vector<std::unique_ptr<AbstractFunctor>>> m_slots;
+  std::map<Signal, std::vector<std::unique_ptr<ISlot>>> m_slots;
   std::mutex m_mtx;
 };
