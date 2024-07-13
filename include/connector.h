@@ -59,6 +59,9 @@ public:
           break;
         }
       }
+      if (m_slots[stype].empty()){
+        m_slots.erase(stype);
+      }
     }
   }
 
